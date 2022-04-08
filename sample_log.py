@@ -1,20 +1,9 @@
-import json
+import os
+import sys
 
-import requests
+sys.path.append(os.path.join(os.path.dirname(__file__), "helper"))
 
-url = "https://xxxx.run.app"
-
-
-def log(project: str, level: str, message: str):
-    d = {
-        "project": project,
-        "level": level,
-        "message": message,
-    }
-    resp = requests.post(url, json=d)
-    print(resp.code)
-    print(resp.text)
-
+import push
 
 if __name__ == "__main__":
-    log("sample_project", "debug", "sample message")
+    push.push("sample_project", "debug", "sample message")

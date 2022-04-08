@@ -9,6 +9,7 @@ import config
 
 TOKEN = config.TOKEN
 USER_ID_OGINO = config.USER_ID_OGINO
+SLACK_WEBHOOK_URL = config.SLACK_WEBHOOK_URL
 
 
 logger = logging.getLogger()
@@ -49,8 +50,25 @@ def hello_http(request: flask.Request):
         message = request_json["message"]
         text = f"[{level}] {project}\n{message}"
         line_push(USER_ID_OGINO, text)
+        slack_notify(text)
 
-    return {"statusCode": 200, "body": json.dumps("success")}
+    return {"statusCode": 200, "body": json.dumps({"result": "success"})}
+
+
+def slack_notify(text):
+    url = SLACK_WEBHOOK_URL
+    headers = {
+        "Content-Type": "application/json",
+    }
+    body = {
+        "text": text,
+    }
+
+    req = urllib.request.Request(
+        url, data=json.dumps(body).encode("utf-8"), method="POST", headers=headers
+    )
+    with urllib.request.urlopen(req) as res:
+        logger.info(res.read().decode("utf-8"))
 
 
 def line_push(to_id, text):
