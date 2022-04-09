@@ -49,8 +49,10 @@ def hello_http(request: flask.Request):
         level = request_json["level"]
         message = request_json["message"]
         text = f"[{level}] {project}\n{message}"
-        line_push(USER_ID_OGINO, text)
-        slack_notify(text)
+        if level in ["error", "info"]:
+            line_push(USER_ID_OGINO, text)
+        if level in ["error", "warn", "info", "debug"]:
+            slack_notify(text)
 
     return {"statusCode": 200, "body": json.dumps({"result": "success"})}
 
