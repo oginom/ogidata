@@ -2,7 +2,9 @@ import json
 
 import requests
 
-url = "https://xxxx.run.app"
+import config
+
+API_URL = config.API_URL
 
 
 def push(project: str, level: str, message: str):
@@ -11,6 +13,5 @@ def push(project: str, level: str, message: str):
         "level": level,
         "message": message,
     }
-    resp = requests.post(url, json=d)
-    print(resp.status_code)
-    print(resp.text)
+    resp = requests.post(API_URL, json=d)
+    return resp

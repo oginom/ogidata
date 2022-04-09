@@ -1,4 +1,5 @@
 /cloudfunction/config.py
+/helper/config.py
 *.pyc
 
 /**/.DS_Store
