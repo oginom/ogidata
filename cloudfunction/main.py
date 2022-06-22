@@ -48,16 +48,18 @@ def hello_http(request: flask.Request):
         project = request_json["project"]
         level = request_json["level"]
         message = request_json["message"]
+        img_url = request_json["img_url"] if "img_url" in request_json else None
+
         text = f"[{level}] {project}\n{message}"
         if level in ["error", "info"]:
-            line_push(USER_ID_OGINO, text)
+            line_push(USER_ID_OGINO, text, img_url)
         if level in ["error", "warn", "info", "debug"]:
-            slack_notify(text)
+            slack_notify(text, img_url)
 
     return {"statusCode": 200, "body": json.dumps({"result": "success"})}
 
 
-def slack_notify(text):
+def slack_notify(text, img_url=None):
     url = SLACK_WEBHOOK_URL
     headers = {
         "Content-Type": "application/json",
@@ -66,6 +68,14 @@ def slack_notify(text):
         "text": text,
     }
 
+    if img_url:
+        body["attachments"] = [
+            {
+                "fields": [],
+                "image_url": img_url,
+            }
+        ]
+
     req = urllib.request.Request(
         url, data=json.dumps(body).encode("utf-8"), method="POST", headers=headers
     )
@@ -73,7 +83,7 @@ def slack_notify(text):
         logger.info(res.read().decode("utf-8"))
 
 
-def line_push(to_id, text):
+def line_push(to_id, text, img_url=None):
     url = "https://api.line.me/v2/bot/message/push"
     headers = {
         "Content-Type": "application/json",
@@ -88,6 +98,16 @@ def line_push(to_id, text):
             }
         ],
     }
+
+    # TODO: preview は 1MB 以下にしないといけない。 upload 側で imgur のオプションでできる？
+    if img_url:
+        body["messages"].append(
+            {
+                "type": "image",
+                "originalContentUrl": img_url,
+                "previewImageUrl": img_url,
+            }
+        )
 
     req = urllib.request.Request(
         url, data=json.dumps(body).encode("utf-8"), method="POST", headers=headers
